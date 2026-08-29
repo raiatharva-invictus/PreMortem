@@ -1,0 +1,95 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  *, *::before, *::after {
+    @apply border-border;
+    box-sizing: border-box;
+  }
+
+  html {
+    @apply bg-canvas text-text-primary;
+    font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    @apply font-sans bg-canvas min-h-screen;
+  }
+
+  ::-webkit-scrollbar {
+    width: 4px;
+    height: 4px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-border-strong rounded-full;
+  }
+}
+
+@layer components {
+  .badge-locked {
+    @apply inline-flex items-center gap-1.5 px-2 py-0.5 text-xs font-medium font-mono
+      text-locked bg-locked-bg border border-locked-border rounded;
+  }
+
+  .badge-certified {
+    @apply inline-flex items-center gap-1.5 px-2 py-0.5 text-xs font-medium font-mono
+      text-certified bg-certified-bg border border-certified-border rounded;
+  }
+
+  .badge-trial {
+    @apply inline-flex items-center gap-1.5 px-2 py-0.5 text-xs font-medium font-mono
+      text-trial bg-trial-bg border border-trial-border rounded;
+  }
+
+  .badge-blocked {
+    @apply inline-flex items-center gap-1.5 px-2 py-0.5 text-xs font-medium font-mono
+      text-blocked bg-blocked-bg border border-blocked-border rounded;
+  }
+
+  .card {
+    @apply bg-surface border border-border rounded-lg;
+  }
+
+  .card-elevated {
+    @apply bg-surface-50 border border-border-strong rounded-lg;
+  }
+
+  .section-label {
+    @apply text-[10px] font-semibold font-mono uppercase tracking-widest text-text-muted;
+  }
+
+  .code-block {
+    @apply font-mono text-xs bg-canvas border border-border rounded p-3 text-text-secondary;
+  }
+
+  .terminal {
+    @apply font-mono text-xs bg-canvas border border-border rounded p-4 text-green-400/90;
+    min-height: 120px;
+  }
+
+  .terminal .terminal-fail {
+    @apply text-red-400;
+  }
+
+  .terminal .terminal-pass {
+    @apply text-emerald-400;
+  }
+
+  .terminal .terminal-info {
+    @apply text-blue-400/70;
+  }
+
+  .terminal .terminal-dim {
+    @apply text-text-muted;
+  }
+}
