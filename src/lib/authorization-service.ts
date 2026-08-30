@@ -10,7 +10,7 @@
 
 import type { Agent, Permission } from '@/types/agent';
 import type { CertificationRecord, Trial } from '@/types/trial';
-import type { StreamCallback } from './trueforge-service';
+import type { StreamCallback } from './api';
 import { canRequestApproval, isCertified, transition } from './certification-engine';
 
 export class AuthorizationError extends Error {
