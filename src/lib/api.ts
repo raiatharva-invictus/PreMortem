@@ -112,3 +112,30 @@ export async function getTrial(trialId: string): Promise<Trial> {
   if (!res.ok) throw new Error(await res.text());
   return res.json();
 }
+
+/**
+ * Fetch all trials (for dashboard/overview).
+ */
+export async function getAllTrials(): Promise<Trial[]> {
+  const res = await fetch(`${BACKEND_URL}/api/trials`);
+  if (!res.ok) throw new Error(await res.text());
+  return res.json();
+}
+
+/**
+ * Fetch all registered MCP capabilities from the backend.
+ */
+export async function getCapabilities(): Promise<Array<{ name: string; description: string; consequential: boolean }>> {
+  const res = await fetch(`${BACKEND_URL}/api/capabilities`);
+  if (!res.ok) throw new Error(await res.text());
+  return res.json();
+}
+
+/**
+ * Backend health check — confirms the backend + TrueForge config is online.
+ */
+export async function checkHealth(): Promise<{ status: string; trueforgeUrl: string; capabilities: string[] }> {
+  const res = await fetch(`${BACKEND_URL}/health`);
+  if (!res.ok) throw new Error(await res.text());
+  return res.json();
+}

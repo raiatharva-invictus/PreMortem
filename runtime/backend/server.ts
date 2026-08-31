@@ -92,6 +92,22 @@ app.post('/mcp/messages', async (req, res) => {
 // 2. REST & SSE API for PREMORTEM Frontend
 // -----------------------------------------------------------------------------
 
+// Health check — used by Render health checks and monitoring
+app.get('/health', (_req, res) => {
+  res.json({
+    status: 'ok',
+    version: '0.1.0',
+    trueforgeUrl: process.env.TRUEFORGE_URL || 'http://localhost:8790',
+    capabilities: capabilityRegistry.getAll().map(c => c.name),
+    timestamp: new Date().toISOString()
+  });
+});
+
+// List all registered MCP capabilities
+app.get('/api/capabilities', (_req, res) => {
+  res.json(capabilityRegistry.getAll());
+});
+
 app.post('/api/trials', async (req, res) => {
   const { agentId, targetCapability, attackStrategy } = req.body;
   const trialId = `TRIAL-${ulid()}`;
