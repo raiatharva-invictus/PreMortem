@@ -1,13 +1,14 @@
 import { BrowserRouter, Routes, Route, NavLink } from 'react-router-dom';
+import { useState, useEffect } from 'react';
 import {
   Shield,
   LayoutDashboard,
   Bot,
   FileSearch,
-  ChevronRight,
   Lock,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { checkHealth } from '@/lib/api';
 import OverviewPage from '@/pages/OverviewPage';
 import AgentsPage from '@/pages/AgentsPage';
 import TrialPage from '@/pages/TrialPage';
@@ -22,6 +23,15 @@ const NAV = [
 ];
 
 function Sidebar() {
+  const [health, setHealth] = useState<{ status: string; trueforgeUrl: string } | null>(null);
+  const [offline, setOffline] = useState(false);
+
+  useEffect(() => {
+    checkHealth()
+      .then(setHealth)
+      .catch(() => setOffline(true));
+  }, []);
+
   return (
     <aside className="w-56 shrink-0 border-r border-border bg-surface flex flex-col">
       {/* Logo */}
@@ -58,11 +68,20 @@ function Sidebar() {
         ))}
       </nav>
 
-      {/* Footer */}
+      {/* Footer — live backend/TrueForge status from /health endpoint */}
       <div className="p-4 border-t border-border">
         <div className="flex items-center gap-2 px-2 py-1.5 rounded bg-canvas">
-          <div className="w-1.5 h-1.5 rounded-full bg-certified animate-pulse" />
-          <span className="text-[10px] font-mono text-text-muted">TrueForge: localhost:8790</span>
+          <div className={cn(
+            'w-1.5 h-1.5 rounded-full',
+            offline ? 'bg-blocked' : health ? 'bg-certified animate-pulse' : 'bg-locked animate-pulse'
+          )} />
+          <span className="text-[10px] font-mono text-text-muted truncate">
+            {offline
+              ? 'TrueForge: offline'
+              : health
+              ? 'TrueForge: online'
+              : 'TrueForge: connecting…'}
+          </span>
         </div>
       </div>
     </aside>

@@ -4,6 +4,13 @@
     "agentId": "agent-atlas-001",
     "targetCapability": "deploy_production",
     "stage": "IN_TRIAL",
-    "startedAt": "2026-08-31T04:36:34.848Z"
+    "startedAt": "2026-08-31T05:59:27.889Z"
+  },
+  "TRIAL-a29nf1zf5xf": {
+    "id": "TRIAL-a29nf1zf5xf",
+    "agentId": "agent-atlas-001",
+    "targetCapability": "deploy_production",
+    "stage": "BLOCKED",
+    "startedAt": "2026-08-31T05:41:41.849Z"
   }
 }
