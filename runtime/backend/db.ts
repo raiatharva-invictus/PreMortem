@@ -130,10 +130,10 @@ export const db = {
 
   agents: {
     get(id: string): Agent | undefined {
-      return AGENTS.find(a => a.id === id);
+      return SEEDED_AGENTS.find(a => a.id === id);
     },
     getAll(): Agent[] {
-      return AGENTS;
+      return SEEDED_AGENTS;
     }
   },
 
