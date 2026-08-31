@@ -1,1 +1,26 @@
-node_modules
+# Dependencies
+node_modules/
+
+# Environment secrets — never commit these
+.env
+.env.local
+.env.*.local
+
+# Build output
+dist/
+
+# NPM cache
+.npm-cache/
+
+# Test scratch
+test-trueforge.ts
+test-trueforge.js
+test-daytona.ts
+
+# Vite internals
+node_modules/.vite/
+
+# Editor
+.vscode/
+.idea/
+*.swp
