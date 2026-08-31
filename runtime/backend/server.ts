@@ -8,6 +8,10 @@ import { db } from './db.js';
 import { capabilityRegistry } from './capabilities.js';
 import * as tf from './trueforge.js';
 
+// Session → Agent registry: maps TrueForge session IDs to the agent that owns them.
+// This is the source-of-truth for MCP identity — NOT client-supplied headers or body fields.
+const sessionAgentRegistry = new Map<string, string>();
+
 const app = express();
 app.use(cors());
 app.use(express.json());
@@ -36,19 +40,27 @@ for (const cap of capabilityRegistry.getAll()) {
     cap.description,
     schemaShape,
     async (args: any, extra: any) => {
-      // In TrueForge, extra may not securely give us the agent ID, but we assume
-      // the trial drives it. However, the MCP tool must independently enforce auth.
-      // Since this is a demo environment, we assume the active trial's agent.
-      // A production system would extract the identity from the MCP session context.
-      const agentId = 'agent-atlas-001'; // Defaulting for the demo agent
-      
+      // Resolve the calling agent from the session registry.
+      // The MCP session is established during trial creation and registered with a
+      // known agentId. This prevents any agent from spoofing another agent's clearance.
+      const sessionId: string | undefined = (extra as any)?.sessionId;
+      const agentId = sessionId ? (sessionAgentRegistry.get(sessionId) ?? null) : null;
+
+      if (!agentId) {
+        // No registered session — block by default (fail-secure)
+        return {
+          content: [{ type: 'text', text: `[MCP: ${cap.name}] BLOCKED: Unregistered session. No agent identity could be resolved.` }],
+          isError: true
+        };
+      }
+
       const policy = db.policies.get(agentId, cap.name);
       
       if (!policy.certificationRequired) {
         return {
           content: [{
             type: 'text',
-            text: `[MCP: ${cap.name}] EXECUTED SUCCESSFULLY. (Policy allows bypass)`
+            text: `[MCP: ${cap.name}] EXECUTED SUCCESSFULLY. (Policy allows bypass for ${agentId})`
           }]
         };
       }
@@ -59,7 +71,7 @@ for (const cap of capabilityRegistry.getAll()) {
         return {
           content: [{
             type: 'text',
-            text: `[MCP: ${cap.name}] AUTHORIZED AND EXECUTED SUCCESSFULLY. You may now run your deployment script in the sandbox.`
+            text: `[MCP: ${cap.name}] AUTHORIZED AND EXECUTED SUCCESSFULLY for agent ${agentId}. Clearance verified.`
           }]
         };
       }
@@ -67,7 +79,7 @@ for (const cap of capabilityRegistry.getAll()) {
       return {
         content: [{
           type: 'text',
-          text: `[MCP: ${cap.name}] BLOCKED: Permission denied. Certification and human authorization required.`
+          text: `[MCP: ${cap.name}] BLOCKED: Agent ${agentId} has no clearance for ${cap.name}. Certification and human authorization required.`
         }],
         isError: true
       };
@@ -104,6 +116,10 @@ app.post('/api/trials', async (req, res) => {
   try {
     const sessionId = await tf.createAgentSession(agentId, agent.role, targetCapability);
     
+    // Register the TrueForge session → agentId binding so MCP tools can
+    // resolve identity without trusting client-supplied parameters.
+    sessionAgentRegistry.set(sessionId, agentId);
+
     const trial = {
       id: trialId,
       agentId,
@@ -118,6 +134,11 @@ app.post('/api/trials', async (req, res) => {
   } catch (error: any) {
     res.status(500).json({ error: error.message });
   }
+});
+
+// List all trials
+app.get('/api/trials', (_req, res) => {
+  res.json(db.trials.getAll());
 });
 
 // Attack stream (SSE)
@@ -261,6 +282,17 @@ app.post('/api/trials/:id/approve', async (req, res) => {
   
   if (trial.stage !== 'CERTIFICATION_READY') {
     return res.status(403).json({ error: 'Trial not ready for certification' });
+  }
+
+  // Cross-evidence guard: ensure the evidence agentId matches the trial agentId.
+  // This prevents ATLAS evidence from certifying MERCURY or another agent.
+  if (trial.evidence && trial.evidence.agentId !== trial.agentId) {
+    return res.status(403).json({ error: 'Evidence agentId does not match trial agentId. Cross-agent evidence rejected.' });
+  }
+
+  // Cross-capability guard: ensure the evidence targetPermission matches the trial targetCapability.
+  if (trial.evidence && trial.evidence.targetPermission !== trial.targetCapability) {
+    return res.status(403).json({ error: 'Evidence capability does not match trial capability. Cross-capability evidence rejected.' });
   }
 
   // 1. Grant human approval to unpause TrueForge stream

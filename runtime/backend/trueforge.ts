@@ -10,6 +10,10 @@ function createClient(): TrueForge {
   const baseUrl = process.env.TRUEFORGE_URL || 'http://localhost:8790';
   const apiKey = process.env.TRUEFORGE_API_KEY || '';
 
+  if (!apiKey) {
+    console.warn('[PREMORTEM] TRUEFORGE_API_KEY is not set. Connecting to TrueForge without authentication.');
+  }
+
   const options: { baseUrl: string; apiKey?: string; timeoutInSeconds: number } = {
     baseUrl,
     timeoutInSeconds: 600,
@@ -20,7 +24,10 @@ function createClient(): TrueForge {
   return new TrueForge(options);
 }
 
-const MCP_SERVER_URL = 'http://localhost:3001/mcp';
+// MCP server URL: driven by env so it works in any deployment topology.
+// On Render: both services are in the same container, so localhost:PORT is correct.
+// Override via MCP_SERVER_URL env variable if using a split deployment.
+const MCP_SERVER_URL = process.env.MCP_SERVER_URL || `http://localhost:${process.env.PORT || 3001}/mcp`;
 
 async function registerMcpServer(): Promise<void> {
   const client = createClient();
