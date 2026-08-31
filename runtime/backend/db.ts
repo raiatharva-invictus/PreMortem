@@ -2,8 +2,9 @@ import fs from 'fs';
 import path from 'path';
 import type { Trial, EvidenceBundle, CertificationRecord, Finding } from '../../src/types/trial.js';
 import type { Agent, AgentProfile } from '../../src/types/agent.js';
-import { AGENTS } from '../../src/data/agents.js';
-import { PROFILES } from '../../src/data/profiles.js';
+import { SEEDED_AGENTS } from '../../src/data/agents.js';
+import { DEPLOYMENT_PROFILE, FINANCIAL_PROFILE, RESEARCH_PROFILE } from '../../src/data/profiles.js';
+const PROFILES = [DEPLOYMENT_PROFILE, FINANCIAL_PROFILE, RESEARCH_PROFILE];
 
 const DB_DIR = path.resolve(process.cwd(), 'runtime/db');
 
