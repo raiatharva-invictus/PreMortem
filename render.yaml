@@ -1,0 +1,18 @@
+services:
+  - type: web
+    name: premortem-api
+    env: node
+    buildCommand: npm install
+    # Start TrueForge locally inside the same private container, then start the PREMORTEM API
+    startCommand: npx @truefoundry/trueforge & npm run mcp
+    envVars:
+      - key: TRUEFORGE_URL
+        value: http://127.0.0.1:8790
+      - key: TRUEFORGE_API_KEY
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: DAYTONA_WORKSPACE_URL
+        sync: false
+      - key: PORT
+        value: 10000
