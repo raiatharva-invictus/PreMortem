@@ -2,6 +2,7 @@ services:
   - type: web
     name: premortem-api
     env: node
+    plan: free
     buildCommand: npm install
     # Start TrueForge locally inside the same private container, then start the PREMORTEM API
     startCommand: npx @truefoundry/trueforge & npm run mcp
