@@ -1,0 +1,10 @@
+{
+  "dependencies": {
+    "@truefoundry/trueforge": "^0.1.4"
+  },
+  "_npx": {
+    "packages": [
+      "@truefoundry/trueforge"
+    ]
+  }
+}

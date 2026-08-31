@@ -1,0 +1,9 @@
+{
+  "trial-123": {
+    "id": "trial-123",
+    "agentId": "agent-atlas-001",
+    "targetCapability": "deploy_production",
+    "stage": "IN_TRIAL",
+    "startedAt": "2026-08-31T04:36:34.848Z"
+  }
+}
