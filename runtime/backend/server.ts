@@ -223,13 +223,22 @@ app.get('/api/trials/:id/retest', async (req, res) => {
     trial.evidence.afterRemediation = result;
     if (pendingApproval) trial.pendingApproval = pendingApproval;
 
-    // Verify
+    // 1. Mathematical constraint check
+    const currentHash = await tf.computeHash(trial.evidence.reproducerScript);
+    if (currentHash !== trial.evidence.reproducerHash) {
+      throw new Error('VERIFICATION FAILED: Reproducer hash mismatch. Evidence tampering detected.');
+    }
+    if (result.outcome !== 'VULNERABILITY_BLOCKED') {
+      throw new Error('VERIFICATION FAILED: Retest execution did not block vulnerability.');
+    }
+
+    // 2. TrueForge Verifier Subagent
     sendEvent({ type: 'SANDBOX_OUTPUT', message: '[VERIFIER] Submitting evidence bundle to Verifier agent...' });
     const isVerified = await tf.runVerifier(JSON.stringify(trial.evidence));
     
     if (passed && isVerified) {
       trial.stage = 'CERTIFICATION_READY';
-      sendEvent({ type: 'CERTIFICATION_READY', message: 'Evidence verified cryptographically.' });
+      sendEvent({ type: 'CERTIFICATION_READY', message: 'Evidence mathematically and independently verified.' });
     } else {
       trial.stage = 'BLOCKED';
       sendEvent({ type: 'ERROR', message: 'Verification failed or retest failed.' });
@@ -270,6 +279,13 @@ app.post('/api/trials/:id/approve', async (req, res) => {
     });
     
     trial.stage = 'AUTHORIZED';
+    const agent = db.agents.get(trial.agentId);
+    const fingerprint = await tf.computeConfigurationFingerprint(
+      agent?.id || '',
+      agent?.description || '',
+      agent?.capabilities || []
+    );
+
     trial.certification = {
       id: `CERT-${ulid()}`,
       agentId: trial.agentId,
@@ -280,8 +296,9 @@ app.post('/api/trials/:id/approve', async (req, res) => {
       humanApproved: true,
       status: 'CERTIFIED',
       createdAt: new Date().toISOString(),
-      approvedAt: new Date().toISOString()
-    };
+      approvedAt: new Date().toISOString(),
+      fingerprint // Attached fingerprint
+    } as any;
     db.trials.update(trial.id, trial);
   } else {
     trial.stage = 'BLOCKED';

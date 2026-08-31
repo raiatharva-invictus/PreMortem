@@ -73,7 +73,7 @@ export interface CertificationRecord {
 export interface Trial {
   readonly id: string;
   readonly agentId: string;
-  readonly targetPermission: string;
+  readonly targetCapability: string;
   stage: TrialStage;
   readonly startedAt: string;
   finding?: Finding;
