@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: premortem-api
+    env: node
+    buildCommand: npm install
+    startCommand: npm run mcp
+    envVars:
+      - key: TRUEFORGE_URL
+        sync: false
+      - key: TRUEFORGE_API_KEY
+        sync: false
+      - key: DAYTONA_WORKSPACE_URL
+        sync: false
+      - key: PORT
+        value: 10000
